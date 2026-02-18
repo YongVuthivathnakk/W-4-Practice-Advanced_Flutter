@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:week4_advance_flutter/1_color_app/model/color_type.dart';
 
 class ColorService extends ChangeNotifier {
-  int _redCount = 0;
-  int _blueCount = 0;
+  final Map<ColorType, int> _counts = {
+    for (var type in ColorType.values) type: 0,
+  };
 
-  int get redCount => _redCount;
-  int get blueCount => _blueCount;
+  Map<ColorType, int> get counts => _counts;
 
-  void implementBlueCount() {
-    _blueCount++;
-    notifyListeners();
-  }
+  void implementCount(ColorType type) {
+    // Make it aware of null values when adding a new color with (no hot reload)
 
-  void implementRedCount() {
-    _redCount++;
+    _counts[type] = (_counts[type] ?? 0) + 1;
     notifyListeners();
   }
 }

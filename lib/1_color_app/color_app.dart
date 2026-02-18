@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:week4_advance_flutter/1_color_app/model/color_type.dart';
 import 'package:week4_advance_flutter/1_color_app/service/color_service.dart';
 
 void main() {
@@ -10,8 +11,6 @@ void main() {
   );
 }
 
-enum CardType { red, blue }
-
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -20,16 +19,10 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  int _currentIndex = 0;
-
   ColorService colorNotifier = ColorService();
-
-  void _incrementRedTapCount() {
-    colorNotifier.implementRedCount();
-  }
-
-  void _incrementBlueTapCount() {
-    colorNotifier.implementBlueCount();
+  int _currentIndex = 0;
+  void onIncrease(ColorType type) {
+    colorNotifier.implementCount(type);
   }
 
   @override
@@ -39,16 +32,8 @@ class _HomeState extends State<Home> {
         listenable: colorNotifier,
         builder: (context, child) {
           return _currentIndex == 0
-              ? ColorTapsScreen(
-                  redTapCount: colorNotifier.redCount,
-                  blueTapCount: colorNotifier.blueCount,
-                  onRedTap: _incrementRedTapCount,
-                  onBlueTap: _incrementBlueTapCount,
-                )
-              : StatisticsScreen(
-                  redTapCount: colorNotifier.redCount,
-                  blueTapCount: colorNotifier.blueCount,
-                );
+              ? ColorTapsScreen(counts: colorNotifier.counts, onTap: onIncrease)
+              : StatisticsScreen(counts: colorNotifier.counts);
         },
       ),
 
@@ -75,30 +60,23 @@ class _HomeState extends State<Home> {
 }
 
 class ColorTapsScreen extends StatelessWidget {
-  final int redTapCount;
-  final int blueTapCount;
-  final VoidCallback onRedTap;
-  final VoidCallback onBlueTap;
+  final Map<ColorType, int> counts;
+  final void Function(ColorType) onTap;
 
-  const ColorTapsScreen({
-    super.key,
-    required this.redTapCount,
-    required this.blueTapCount,
-    required this.onRedTap,
-    required this.onBlueTap,
-  });
+  const ColorTapsScreen({super.key, required this.counts, required this.onTap});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Color Taps')),
       body: Column(
         children: [
-          ColorTap(type: CardType.red, tapCount: redTapCount, onTap: onRedTap),
-          ColorTap(
-            type: CardType.blue,
-            tapCount: blueTapCount,
-            onTap: onBlueTap,
-          ),
+          ...ColorType.values.map((type) {
+            return (ColorTap(
+              type: type,
+              onTap: () => onTap(type),
+              tapCount: counts[type] ?? 0,
+            ));
+          }),
         ],
       ),
     );
@@ -106,7 +84,7 @@ class ColorTapsScreen extends StatelessWidget {
 }
 
 class ColorTap extends StatelessWidget {
-  final CardType type;
+  final ColorType type;
   final int tapCount;
   final VoidCallback onTap;
 
@@ -117,7 +95,7 @@ class ColorTap extends StatelessWidget {
     required this.onTap,
   });
 
-  Color get backgroundColor => type == CardType.red ? Colors.red : Colors.blue;
+  Color get backgroundColor => type.color;
 
   @override
   Widget build(BuildContext context) {
@@ -143,14 +121,9 @@ class ColorTap extends StatelessWidget {
 }
 
 class StatisticsScreen extends StatelessWidget {
-  final int redTapCount;
-  final int blueTapCount;
+  final Map<ColorType, int> counts;
 
-  const StatisticsScreen({
-    super.key,
-    required this.redTapCount,
-    required this.blueTapCount,
-  });
+  const StatisticsScreen({super.key, required this.counts});
 
   @override
   Widget build(BuildContext context) {
@@ -160,8 +133,9 @@ class StatisticsScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('Red Taps: $redTapCount', style: TextStyle(fontSize: 24)),
-            Text('Blue Taps: $blueTapCount', style: TextStyle(fontSize: 24)),
+            ...ColorType.values.map((type) {
+              return Text("Number of $type: ${counts[type] ?? 0}");
+            }),
           ],
         ),
       ),
