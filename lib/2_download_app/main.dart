@@ -18,8 +18,21 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   int _currentIndex = 1;
+  ThemeColorProvider colorProvider = ThemeColorProvider();
 
-  final List<Widget> _pages =  [DownloadsScreen(), SettingsScreen()];
+  List<Widget> get _pages => [
+    DownloadsScreen(colorProvider: colorProvider),
+    SettingsScreen(colorProvider: colorProvider),
+  ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    colorProvider.addListener(() {
+      setState(() {});
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +49,7 @@ class _MyAppState extends State<MyApp> {
               _currentIndex = index;
             });
           },
-          selectedItemColor: currentThemeColor.color,
+          selectedItemColor: colorProvider.currentColor.color,
           items: [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Downloads'),
             BottomNavigationBarItem(
